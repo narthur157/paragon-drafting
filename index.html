@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PARAGON DRAFTINGt</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 50%; }
+      input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+    </style>
+  </head>
+  <body>
+  	<input id="team1"></input></br >
+  	<input id="team2"></input></br >
+  	<input id="observer"></input></br >
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" placeholder="Tournament name" /><button>Create draft</button>
+    </form>
+    <script src="assets/socket.io-client/socket.io.js"></script>
+	<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+	<script>
+	  function makeUrl(uri) {
+	  	var baseUrl = "http://app.nicksprivatevm.org/";
+	  	
+	  	return baseUrl + uri;
+	  }
+	  
+	  var socket = io();
+	  
+	  
+	  socket.on('draftJoin', function() {
+	  	console.log('draft join');
+	  });
+	  
+	  socket.on('createDraft', function(session) {
+	  	console.log('createDraft');
+	  	console.log($('#team1'));
+	  	
+	  	var makeRoomUrl = function(roleId) { return makeUrl("drafts/" + session.draftId + "/" +  roleId); }
+	  	
+	  	$('#team1').attr('value', makeRoomUrl(session.teamId1));
+	  	$('#team2').attr('value', makeRoomUrl(session.teamId2));
+	  	$('#observer').attr('value', makeRoomUrl(session.observerId));
+	  });
+	  
+	  $('form').submit(function(){
+	    socket.emit('createDraft', $('#m').val());
+	    $('#m').val('');
+	    return false;
+	  });
+	</script>
+  </body>
+</html>
