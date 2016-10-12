@@ -15,9 +15,14 @@ function genId() {
 function createDraft(socket, name) {
 	session = {
 		draftId : genId(),
-		teamId1 : genId(),
-		teamId2 : genId(),
-		observerId : genId()
+		teamId1 : 1,
+		teamId2 : 2,
+		observerId : 3,
+		stageTag: 'not-ready',
+		stageState: {
+			player1Ready: false,
+			player2Ready: false
+		}
 	};
 	
 	state.sessions[session.draftId] = session;

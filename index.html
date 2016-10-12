@@ -1,55 +1,110 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>PARAGON DRAFTINGt</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 50%; }
-      input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-    </style>
-  </head>
-  <body>
-  	<input id="team1"></input></br >
-  	<input id="team2"></input></br >
-  	<input id="observer"></input></br >
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" placeholder="Tournament name" /><button>Create draft</button>
-    </form>
-    <script src="assets/socket.io-client/socket.io.js"></script>
-	<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-	<script>
-	  function makeUrl(uri) {
-	  	var baseUrl = "http://app.nicksprivatevm.org/";
+<script type ="text/javascript">
+	function getDraftLink(div) {
+	    document.getElementById(div).style.display = 'block';
+	};
+	
+	function hide(div) {
+	    document.getElementById(div).style.display = 'none';
+	};
+	//To detect escape button
+	document.onkeydown = function (evt) {
+	    evt = evt || window.event;
+	    if (evt.keyCode == 27) {
+	        hide('popDiv');
+	    }
+	}; 
+</script>
+<title>ParaDrafter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/draftC.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+<style>
+	body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+	.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+	.fa-anchor,.fa-coffee {font-size:200px}
+</style>
+<body>
+
+<!-- Header -->
+<header class="w3-container w3-black w3-center w3-padding-128">
+  <h1 class="w3-margin w3-jumbo">ParaDrafter</h1>
+</header>
+
+<!-- HowTo Grid -->
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>How To </h1>
+	 
+      <p class="w3-text-grey">Fill out the below form completely and press "Start Drafting". You will then be taken to a page with three links. Give your team's link to your team-mates and give the opponent's link to your opponents.
+	  If there are any spectators, give them the spectator link. Spectators will be unable to participate in the draft, they can only watch it progress. <b> If team links are made public (via accidentally showing links on stream for example) anyone can join and participate in the draft. </b> We recommend viewing the draft lobby in fullscreen mode (F11 shortcut) 
+	  if you are on a team and streaming a drafting lobby.</p>
+    </div>
+	<br/>
+    <div class="w3-third w3-center">
+      <img src="paraLogo.jpg" style="height:200px;">
+    </div>
+  </div>
+</div>
+
+
+<!-- Form Grid -->
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+  <div class="w3-content">
+		
+		
+		<center>
+		<h1>Lobby Information Form </h1><br/>
+		<form>	
+			<fieldset>
+			<h2> Team Names </h2>
+			<input type="text" name="team1" placeholder = "Team One" />
+			<input type="text" name="team1" placeholder = "Team Two" />
+			<br/> <br/>
+			<h2> Number of Bans </h2>
+			<input type="radio" name ="banNum" value = "1" checked> One
+			<input type="radio" name ="banNum" value = "2"> Two
+			<input type="radio" name ="banNum" value = "3"> Three
+			<br/><br/>
+			<h2> Matchmaking Key </h2>
+			<input type="text" name="team1" placeholder = "Matchmaking Key" /><br/><br/>
+			</fieldset>
+		</form><br/>
+
+		<button id="m" onclick ="getDraftLink('popDiv')" class="w3-btn w3-padding-16 w3-large w3-margin-top">Start drafting</button>
+		</center>
+
+  </div>
+</div>
+
+<div id="popDiv" class="ontop">
+    <div class="popupInfo">
+		<button onclick="hide('popDiv')" style="float:right;" > X </button>
+		<center>
+		<h2> Your draft lobby is ready! </h2>
+		<hr style="width:50%;" >
+		<br/>
+		<ul id="team1">
+  			<a>Team 1 link: </a><input class="link" />
+  		</ul>
+	  	<ul id="team2">
+	  		<a>Team 2 link: </a><input class="link" />
+	  	</ul>
+	  	<ul id="observer">
+	  		<a>Observer link: </a><input class="link" />
+	  	</ul>
 	  	
-	  	return baseUrl + uri;
-	  }
-	  
-	  var socket = io();
-	  
-	  
-	  socket.on('draftJoin', function() {
-	  	console.log('draft join');
-	  });
-	  
-	  socket.on('createDraft', function(session) {
-	  	console.log('createDraft');
-	  	console.log($('#team1'));
-	  	
-	  	var makeRoomUrl = function(roleId) { return makeUrl("drafts/" + session.draftId + "/" +  roleId); }
-	  	
-	  	$('#team1').attr('value', makeRoomUrl(session.teamId1));
-	  	$('#team2').attr('value', makeRoomUrl(session.teamId2));
-	  	$('#observer').attr('value', makeRoomUrl(session.observerId));
-	  });
-	  
-	  $('form').submit(function(){
-	    socket.emit('createDraft', $('#m').val());
-	    $('#m').val('');
-	    return false;
-	  });
-	</script>
-  </body>
+	</center>
+	</div>
+</div>
+
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script src="/assets/index.js"></script>
+</body>
 </html>
+
