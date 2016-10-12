@@ -12,6 +12,7 @@ socket.on('draftJoin', function() {
 });
 
 socket.on('createDraft', function(session) {
+  console.log('createDraft');
   var makeRoomUrl = function(roleId) { return makeUrl("drafts/" + session.draftId + "/" +  roleId); },
 	  team1Url = makeRoomUrl(session.teamId1),
   	  team2Url = makeRoomUrl(session.teamId2),
@@ -26,7 +27,7 @@ socket.on('createDraft', function(session) {
   $('#observer a').prop('href', observerUrl);
 });
 
-$('form').submit(function(){
+$('button').click(function(){
 	socket.emit('createDraft', $('#m').val());
 	$('#m').val('');
 	return false;
