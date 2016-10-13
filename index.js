@@ -7,7 +7,14 @@ function makeUrl(uri) {
 // Returns the form data as an array
 // of objects with name and value properties
 function getFormData() {
-	return $('form').serializeArray();
+	var arr = $('form').serializeArray();
+	var ret = {};
+	
+	for (i = 0; i < arr.length; i++) {
+		ret[arr[i].name] = arr[i].value;
+	}
+	
+	return ret;
 }
   
 var socket = io();
@@ -17,11 +24,11 @@ socket.on('draftJoin', function() {
   console.log('draft join');
 });
 
-socket.on('createDraft', function(session) {
-  console.log('createDraft');
-  var makeRoomUrl = function(roleId) { return makeUrl("drafts/" + session.draftId + "/" +  roleId); },
-	  team1Url = makeRoomUrl(session.teamId1),
-  	  team2Url = makeRoomUrl(session.teamId2),
+socket.on('draftCreated', function(session) {
+  console.log('draftCreated');
+  var makeRoomUrl = function(roleId) { return makeUrl("drafts/" + session.matchKey + "/" +  roleId); },
+	  team1Url = makeRoomUrl(session.team1Name),
+  	  team2Url = makeRoomUrl(session.team2Name),
   	  observerUrl = makeRoomUrl(session.observerId);
   	
   $('#team1 input').prop('value', team1Url);
@@ -37,6 +44,5 @@ socket.on('createDraft', function(session) {
 
 $('button').click(function(){
 	socket.emit('createDraft', getFormData());
-	$('#m').val('');
 	return false;
 });
