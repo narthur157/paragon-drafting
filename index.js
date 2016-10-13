@@ -3,6 +3,12 @@ function makeUrl(uri) {
   
   return baseUrl + uri;
 }
+
+// Returns the form data as an array
+// of objects with name and value properties
+function getFormData() {
+	return $('form').serializeArray();
+}
   
 var socket = io();
 
@@ -27,8 +33,10 @@ socket.on('createDraft', function(session) {
   $('#observer a').prop('href', observerUrl);
 });
 
+
+
 $('button').click(function(){
-	socket.emit('createDraft', $('#m').val());
+	socket.emit('createDraft', getFormData());
 	$('#m').val('');
 	return false;
 });
