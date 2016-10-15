@@ -17,12 +17,7 @@ function getFormData() {
 	return ret;
 }
   
-var socket = io();
-
-
-socket.on('draftJoin', function() {
-  console.log('draft join');
-});
+var socket = io('/create');
 
 socket.on('draftCreated', function(session) {
   console.log('draftCreated');
@@ -42,7 +37,8 @@ socket.on('draftCreated', function(session) {
 
 
 
-$('button').click(function(){
+$('#m').click(function(){
+	console.log(socket.id);
 	socket.emit('createDraft', getFormData());
 	return false;
 });

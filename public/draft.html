@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <title>DRAFTING ROOM</title>
+    <body>
+    	<div id="ractiveRoot"></div>
+    	
+    	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src='http://cdn.ractivejs.org/latest/ractive.js'></script>
+    	<script id="draftTemplate" type="text/ractive">
+    		{{#partial readyStage}}
+				<button id="team1Ready" on-click='submitReady:1'>Team {{session.team1Name}} Ready</button>
+				<button id="team2Ready" on-click='submitReady:2'>Team {{session.team2Name}} Ready</button>
+			{{/partial}}
+			
+			{{#partial t1pick}}
+				<p>{{session.stageTag}}: Team {{session.stageState.teamTurn}} to pick</p>
+				<div>
+					<p>Team {{session.team1Name}} Pick</p>
+						{{#team1}}
+							{{>pickChamp}}
+						{{/team1}}
+				</div>
+			{{/partial}}
+			
+			{{#partial t2pick}}
+				{{>t1pick}}	
+			{{/partial}}
+			
+			{{#partial t1ban}}
+				{{>t1pick}}	
+			{{/partial}}
+			
+			{{#partial t2ban}}
+				{{>t1pick}}	
+			{{/partial}}
+			
+			{{#partial pickChamp}}
+		    	{{#champs}}
+		    		{{>champ}}
+		    	{{/champs}}
+			{{/partial}}
+			
+			{{#partial champ}}
+				<ul id={{.id}}>
+					<button on-click='submitChar:{{.id}}'>{{.id}}</button>
+				</ul>
+			{{/partial}}
+			
+			{{>session.stageTag}}
+    	</script>
+		<script src="/assets/draft.js"></script>
+	</body>
+</html>
