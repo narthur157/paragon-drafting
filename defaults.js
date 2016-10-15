@@ -4,11 +4,12 @@
 module.exports = {
 	draftSession: function(matchKey, numBans, team1Name, team2Name) {
 		var replicateArr = function(arr, numTimes) {
-			for(i = 1; i < numTimes; i++) {
-				arr = arr.concat(arr);
+			ret = [];
+			for(i = 0; i < numTimes; i++) {
+				ret = ret.concat(arr);
 			}
 			
-			return arr;
+			return ret;
 		}
 		
 		return {

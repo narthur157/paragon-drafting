@@ -16,7 +16,28 @@
 			{{#partial t1pick}}
 				<p>{{session.stageTag}}: Team {{session.stageState.teamTurn}} to pick</p>
 				<div>
-					<p>Team {{session.team1Name}} Pick</p>
+					<p>Team 1 Banned: 
+						{{#session.stageState.teams.1.banned}}
+							<p>{{.}}</p>
+						{{/session.stageState.teams.1.banned}}
+					</p>
+					<p> Team 1 Picked:
+						{{#session.stageState.teams.1.picked}}
+							<p>{{.}}</p>
+						{{/session.stageState.teams.1.picked}}
+					</p>
+					<p> Team 2 Banned:
+						{{#session.stageState.teams.2.banned}}
+							<p>{{.}}</p>
+						{{/session.stageState.teams.2.banned}}
+					</p>
+					<p> Team 2 Picked:
+						{{#session.stageState.teams.2.picked}}
+							<p>{{.}}</p>
+						{{/session.stageState.teams.2.picked}}
+					</p>
+					
+					<p>Champions:</p>
 						{{#team1}}
 							{{>pickChamp}}
 						{{/team1}}
