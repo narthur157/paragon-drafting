@@ -8,7 +8,8 @@ module.exports = {
 	'banChar' : banChar,
 	'pickChar' : pickChar,
 	'getState' : getState,
-	'setIo': setIo
+	'setIo': setIo,
+	'nextStage': nextStage
 };
 
 var io;
@@ -17,8 +18,18 @@ function setIo(i) { io = i; }
 
 // Set the session stageTag and stageState
 // Emit the appropriate event
-function nextStage(session, socket) {
+function nextStage(session) {
 	var defaultStageState = defaults.pickStageState();
+	
+	
+	// if (session._timing) {
+	// 	clearTimeout(session._timing);
+	// }
+	
+	// // // automatically go to next 
+	// session._timing = setTimeout(function() {
+	// 	nextStage(session);
+	// }, session.stageState.timeLeft);
 	
 	if (session.stageQueue.length === 0) {
 		return false;
@@ -29,6 +40,8 @@ function nextStage(session, socket) {
 	
 	tag = session.stageQueue.shift();
 	session.stageTag = tag;
+	// get this num from defaults.js
+	session.stageState.timeLeft = 40;
 	
 	if (tag.indexOf('1') !== -1) {
 		session.stageState.teamTurn = 1;
@@ -53,6 +66,7 @@ function charNotUsed(team, key, charId) {
 
 function getState(session) {
 	console.log('getState');
+	console.log(session);
 	room.emit('getState', session); 
 }
 
@@ -60,7 +74,9 @@ function teamReady(session, teamNum) {
 	if (session.stageTag !== 'readyStage') {
 		return;
 	}
+	
 	console.log('team ' + teamNum + ' ready');
+	
 	if (teamNum === 1) {
 		session.stageState.team1Ready = true;
 	}
@@ -72,6 +88,10 @@ function teamReady(session, teamNum) {
 	if (session.stageState.team1Ready && session.stageState.team2Ready) {
 		nextStage(session);
 	}
+	else {
+		io.of(session.matchKey).emit('getState', session);
+	}
+	
 	console.log(session);
 }
 

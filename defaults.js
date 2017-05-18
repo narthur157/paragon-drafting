@@ -1,3 +1,4 @@
+
 /*
  * These are functions because otherwise the objects would be shared rather than cloned
 */
@@ -15,9 +16,9 @@ module.exports = {
 		return {
 			stageQueue : replicateArr(['t1ban', 't2ban'], numBans).concat([
 						 't1pick', 't2pick', 't2pick', 't1pick', 't1pick', 't2pick', 't2pick', 't1pick', 't1pick', 't2pick', 'finish']),
-			matchKey : matchKey,
-			team1Name : team1Name,
-			team2Name : team2Name,
+			matchKey : matchKey || Math.random() * 999999, // would be better to check sessions for collisions
+			team1Name : team1Name || '1',
+			team2Name : team2Name || '2',
 			numBans : numBans,
 			observerId : 'obs',
 			stageTag: 'readyStage',
@@ -27,8 +28,9 @@ module.exports = {
 			}
 		};
 	},
+	
 	pickStageState: function() {
-		return {
+		var state = {
 			teams: {
 				1: {
 					picked: [],
@@ -39,7 +41,12 @@ module.exports = {
 					banned: []
 				}
 			},
-			teamTurn: 1
+			teamTurn: 1,
+			timeLeft: 40
 		};
+		
+		setInterval(function() { state.timeLeft--; }, 1000);
+		
+		return state;
 	}
 };

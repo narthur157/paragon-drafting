@@ -5,15 +5,29 @@ var session = {},
   	teamNum = 0,
   	otherTeamNum = function () { return (teamNum%2) + 1 },
   	champs = [
-	  { id: 0 },
-	  { id: 1 },
-	  { id: 2 },
-	  { id: 3 },
-	  { id: 4 },
-	  { id: 5 },
-	  { id: 6 },
-	  { id: 7 },
-	  { id: 9 }
+	  { id: 0, url: '/assets/heroes/Hero_Portrait_Dekker.jpg', available: true},
+	  { id: 1, url: '/assets/heroes/Hero_Portrait_Feng_Mao.jpg', available: true },
+	  { id: 2, url: '/assets/heroes/Hero_Portrait_Gadget.jpg', available: true},
+	  { id: 3, url: '/assets/heroes/Hero_Portrait_Gideon.jpg', available: true },
+	  { id: 4, url: '/assets/heroes/Hero_Portrait_Greystone.png', available: true },
+	  { id: 5, url: '/assets/heroes/Hero_Portrait_Grim.exe.jpg', available: true },
+	  { id: 6, url: '/assets/heroes/Hero_Portrait_Grux.jpg.webp', available: true },
+	  { id: 7, url: '/assets/heroes/Hero_Portrait_Howitzer.jpg.webp', available: true },
+	  { id: 8, url: '/assets/heroes/Hero_Portrait_Iggy_and_Scorch.jpg.webp', available: true },
+	  { id: 10, url: '/assets/heroes/Hero_Portrait_Kallari.jpg.webp', available: true },
+	  { id: 11, url: '/assets/heroes/Hero_Portrait_Khaimera.png.webp', available: true },
+	  { id: 12, url: '/assets/heroes/Hero_Portrait_Kwang.png.webp', available: true },
+	  { id: 13, url: '/assets/heroes/Hero_Portrait_Lt._Belica.png.webp', available: true },
+	  { id: 14, url: '/assets/heroes/Hero_Portrait_Murdock.jpg.webp', available: true },
+	  { id: 15, url: '/assets/heroes/Hero_Portrait_Muriel.jpg.webp', available: true },
+	  { id: 16, url: '/assets/heroes/Hero_Portrait_Narbash.png.webp', available: true },
+	  { id: 17, url: '/assets/heroes/Hero_Portrait_Rampage.jpg.webp', available: true },
+	  { id: 18, url: '/assets/heroes/Hero_Portrait_Riktor.jpg.webp', available: true },
+	  { id: 19, url: '/assets/heroes/Hero_Portrait_Sevarog.jpg.webp', available: true },
+	  { id: 20, url: '/assets/heroes/Hero_Portrait_Sparrow.jpg.webp', available: true },
+	  { id: 21, url: '/assets/heroes/Hero_Portrait_Steel.jpg.webp', available: true },
+	  { id: 22, url: '/assets/heroes/Hero_Portrait_The_Fey.png.webp', available: true },
+	  { id: 23, url: '/assets/heroes/Hero_Portrait_TwinBlast.png.webp', available: true }
 	];
 
 //socket.emit('joinDraft', matchKey);
@@ -25,12 +39,13 @@ var onState = function(stateName, f) {
   socket.on(stateName, function() {
   	var args = Array.prototype.slice.call(arguments);
   	// session state will always be the first argument 
-  	session=args.shift();
+  	var s=args.shift();
   	if (ractive) {
-  		ractive.set('session', session);
+  		ractive.set('session', s);
   	}
-  	console.log('Logging session: ');
-  	console.log(session);
+  	session = s;
+  	console.log('received state update: ');
+  	console.log(s);
   	f.call(this, args);
   });
 }
@@ -47,31 +62,38 @@ var submitHandler = function(event, team) {
 	}
 }
 
+function isBan() {
+	return session.stageTag.indexOf('ban') !== -1;
+}
 
+function isPick() {
+	return session.stageTag.indexOf('pick') !== -1;
+}
+
+function unavailableChars() {
+	var teams = session.stageState.teams;
+	var myTeam = teams[teamNum];
+	var theirTeam = teams[otherTeamNum()];
+	
+	var unavailable = myTeam.picked.concat(myTeam.banned).concat(theirTeam.picked).concat(theirTeam.banned);
+	
+	// if (isBan()) {
+	// 	unavailable = teams[otherTeamNum()].picked.concat(teams[otherTeamNum()].banned);
+	// }
+	// if (isPick()) {
+	// 	unavailable = teams[teamNum].picked.concat(teams[teamNum].banned);
+	// }
+	
+	return unavailable;
+}
 
 var submitCharHandler = function(event, charId) {
-	// used a stupid hack to keep DRY'ness on the buttons
-	// would like to figure out a better way
-	// uses keypath to identify which team is picking
-	var banned = [],
-		teams = session.stageState.teams,
-		isBan = session.stageTag.indexOf('ban') !== -1,
-		isPick = session.stageTag.indexOf('pick') !== -1;
-		
 	if (session.stageState.teamTurn !== teamNum) {
 		alert('It is not your turn. Better luck next time.');
 		return;
 	}
 	
-	var unavailable = [];
-	
-	if (isBan) {
-		unavailable = teams[otherTeamNum()].picked.concat(teams[otherTeamNum()].banned);
-	}
-	if (isPick) {
-		console.log('isPick');
-		unavailable = teams[teamNum].picked.concat(teams[teamNum].banned);
-	}
+	var unavailable = unavailableChars();
 	
 	for (i = 0; i < unavailable.length; i++) {
 		if (unavailable[i] === charId) {
@@ -80,10 +102,10 @@ var submitCharHandler = function(event, charId) {
 		}
 	}
 	
-	if (isBan) {
+	if (isBan()) {
 		socket.emit('banChar', charId, teamNum === 1 ? 2 : 1);
 	}
-	if (isPick) {
+	if (isPick()) {
 		socket.emit('pickChar', charId, teamNum);
 	}
 }
@@ -103,7 +125,11 @@ var ractive;
 onState('getState', function() { 
 	console.log('getState');
 	
+	
+	
 	if (!loaded && session !== undefined) {
+		loaded = true;
+		
 		if (teamId === session.team1Name) {
 			teamNum = 1;
 		}
@@ -111,28 +137,48 @@ onState('getState', function() {
 			teamNum = 2;
 		}
 		
-		ractive = new Ractive({
-			// The `el` option can be a node, an ID, or a CSS selector.
+		ractive = new Ractive({ 
 			el: '#ractiveRoot',
 			template: '#draftTemplate',
-			// Here, we're passing in some initial data
 			data: {
 			  'session': session,
-			  team1: {
-			  	'champs': champs
-			  },
-			  team2: {
-			  	'champs': champs
+			  'champs': champs,
+			  charMap: function(id) {
+			  	console.log(id);
+			  	return champs[id];
 			  }
 			}
 		});
 		
 		ractive.on('submitChar', submitCharHandler);
 		ractive.on('submitReady', submitHandler);
-		// ractive.on('submitPick', submitPickHandler);
-		// ractive.on('submitBan', submitBanHandler);
+		
+		setInterval( function () {
+  			ractive.set( 'session.stageState.timeLeft', session.stageState.timeLeft - 1);
+		}, 1000 );
 	}
 	
+	if (session.stageTag !== 'readyStage') {
+		var unavailable = unavailableChars();
+		for (i = 0; i < champs.length; i++) {
+			var champ = champs[i];
+			available = true;
+			
+			if (session.stageState.teamTurn !== teamNum) {
+				available = false;
+			}
+			else {
+				for (j = 0; j < unavailable.length; j++) {
+					if (champ.id === unavailable[j]) available = false;
+				}	
+			}
+			
+			var availableStr = available ? "available" : "unavailable";
+			
+			ractive.set('champs.' + i + '.available', availableStr);
+		}
+	}
+
 	return; 
 });
 

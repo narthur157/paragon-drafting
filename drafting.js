@@ -41,6 +41,10 @@ function createDraft(formData) {
 	sessions[session.matchKey] = session;
 	room = io.of(session.matchKey);
 	
+	// session._timing = setTimeout(function() {
+	// 	draftSession.nextStage(session);
+	// }, session.stageState.timeLeft);
+	
 	room.on('connection', bindDraftSocket.bind(this, session));
 	
 	return session;
