@@ -62,21 +62,21 @@
 		<h1>Lobby Information Form </h1><br/>
 		<form>	
 			<fieldset>
-			<h2> Team Names </h2>
-			<input type="text" name="team1Name" placeholder = "Team One" />
-			<input type="text" name="team2Name" placeholder = "Team Two" />
-			<br/> <br/>
-			<h2> Number of Bans </h2>
-			<input type="radio" name ="numBans" value = "1" checked> One
-			<input type="radio" name ="numBans" value = "2"> Two
-			<input type="radio" name ="numBans" value = "3"> Three
-			<br/><br/>
-			<h2> Matchmaking Key </h2>
-			<input type="text" name="matchKey" placeholder = "Matchmaking Key" /><br/><br/>
+				<h2> Team Names </h2>
+				<input type="text" id="team1Input" name="team1Name" placeholder = "Team One" />
+				<input type="text" id="team2Input" name="team2Name" placeholder = "Team Two" />
+				<br/> <br/>
+				<h2> Number of Bans </h2>
+				<input type="radio" name ="numBans" value = "1" checked> One
+				<input type="radio" name ="numBans" value = "2"> Two
+				<input type="radio" name ="numBans" value = "3"> Three
+				<br/><br/>
+				<h2> Matchmaking Key </h2>
+				<input type="text" id="matchKeyInput" name="matchKey" placeholder = "Matchmaking Key" /><br/><br/>
 			</fieldset>
 		</form><br/>
 
-		<button id="m" onclick ="getDraftLink('popDiv')" class="w3-btn w3-padding-16 w3-large w3-margin-top">Start drafting</button>
+		<button id="startDraftButton" onclick ="getDraftLink('popDiv')" class="w3-btn w3-padding-16 w3-large w3-margin-top">Start drafting</button>
 		</center>
 
   </div>
@@ -90,13 +90,13 @@
 		<hr style="width:50%;" >
 		<br/>
 		<h3 id="team1">
-  			<a>Team 1 link: </a><input class="link" />
+  			<a id="team1Link">Team 1 link: </a><input class="link" />
   		</h3 >
 	  	<h3 id="team2">
-	  		<a>Team 2 link: </a><input class="link" />
+	  		<a id="team2Link">Team 2 link: </a><input class="link" />
 	  	</h3 >
 	  	<h3 id="observer">
-	  		<a>Observer link: </a><input class="link" />
+	  		<a id="obsLink">Observer link: </a><input class="link" />
 	  	</h3 >
 	  	
 	</center>

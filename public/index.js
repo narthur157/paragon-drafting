@@ -37,7 +37,7 @@ socket.on('draftCreated', function(session) {
 
 
 
-$('#m').click(function(){
+$('#startDraftButton').click(function(){
 	console.log(socket.id);
 	socket.emit('createDraft', getFormData());
 	return false;

@@ -41,6 +41,10 @@
 			height: 50%;
 		}
 		
+		.row-6 {
+			height: 60%;
+		}
+		
 		.column {
 		    position: relative;
 		    float: left;
@@ -143,7 +147,7 @@
 			margin: auto;
 		}
 		
-  		.portrait { height: 70px; padding: 2px; border: 2px solid #fff; opacity: 0.8;}
+  		.portrait { height: 80px; padding: 2px; border: 2px solid #fff; opacity: 0.8;}
   		.unavailable { opacity: 0.1; }
   		body { color: white; background: #090908; letter-spacing: 4px; font-family: Raleway,sans-serif; font-weight: bold; font-size: 20px;}
   		
@@ -155,104 +159,73 @@
     	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 		<script src='http://cdn.ractivejs.org/latest/ractive.js'></script>
+		<script id="readyTemplate" type="text/ractive">
+			<div class="row row-3">
+				<h2>You are team {{ ~/getMyTeam(.) }}</h2>
+			</div>
+			<div class="column column-6">
+				{{#!session.stageState.team1Ready}}
+					<div class="column column-12" on-click='submitReady:1'>
+						<p class="ready" id="team1Ready" >Team {{session.team1Name}} Ready</p>
+					</div>
+				{{/}}
+			</div>
+			<div class="column column-6">
+				{{#!session.stageState.team2Ready}}
+					<p class="ready" id="team2Ready" on-click='submitReady:2'>Team {{session.team2Name}} Ready</p>
+				{{/}}
+			</div>
+		</script>
     	<script id="draftTemplate" type="text/ractive">
-    		{{#partial readyStage}}
-    			<div class="row row-3"></div>
-    			<div class="row row-2">
-    				{{#!session.stageState.team1Ready}}
-	    				<div class="column column-12" on-click='submitReady:1'>
-							<p class="ready" id="team1Ready" >Team {{session.team1Name}} Ready</p>
-						</div>
-					{{/}}
-				</div>
-				
-    			<div class="row">
-    				<div class="column column-12">
-						<p class="ready" id="team2Ready" on-click='submitReady:2'>Team {{session.team2Name}} Ready</p>
-					</div>
-				</div>
-			{{/partial}}
-			
-			{{#partial t1pick}}
-				<div class="row row-3">
-					<div class="column column-2">
-						<p>Team 1 Banned</p>
-					</div>
-					
-					<div class="column column-1">
-						{{#session.stageState.teams.1.banned}}
-							<img class='portrait' src="{{ ~/charMap(.).url }}" />
-						{{/session.stageState.teams.1.banned}}
-					</div>
-					
-					<div class="column column-6">
-						<p class="team{{session.stageState.teamTurn}}">{{session.stageTag}} {{session.stageState.timeLeft}}</p>
-					</div>
-					
-					<div class="column column-1">
-						{{#session.stageState.teams.2.banned}}
-							<img class='portrait' src="{{ ~/charMap(.).url }}" />
-						{{/session.stageState.teams.2.banned}}
-					</div>
-					
-					<div class="column column-2">
-						<p>Team 2 Banned</p>
-					</div>
-				</div>
-				
-				<div class="row row-5">
-					<div class="column column-2">
-						<p>Team 1 Picked</p>
-					</div>
-					
-					<div class="column column-1">
+			<div class="row">
+				<div class="column column-2">
+					<div class="row row-6">
 						{{#session.stageState.teams.1.picked}}
 							<img class='portrait' src="{{ ~/charMap(.).url }}" />
 						{{/session.stageState.teams.1.picked}}
 					</div>
-					
-					<div class="column column-6">
+					<div class="row">
+						{{#session.stageState.teams.1.banned}}
+							<img class='portrait' style="border-color: red;" src="{{ ~/charMap(.).url }}" />
+						{{/session.stageState.teams.1.banned}}
+					</div>
+				</div>
+				<div class="column column-1"></div>
+				<div class="column column-6">
+					<div class="row">
+						<div class="team1 column column-3">
+							<h2>Team {{session.team1Name}}</h2>
+						</div>
+						<div class="team{{session.stageState.teamTurn}} column column-6">
+							<h2>{{session.stageTag}}</h2>
+							<p>{{session.stageState.timeLeft}}</p>
+						</div>
+						<div class="team2 column column-3">
+							<h2>Team {{session.team2Name}}</h2>
+						</div>
 						<img src="/assets/paragon-logo-trans.png" />
 					</div>
-					
-					<div class="column column-1">
+					<div class="row">
+						{{#champs}}
+		    				<img class="portrait {{ ~/isAvailable(.) }}" src="{{.url}}" on-click='submitChar:{{.id}}'/>
+						{{/champs}}
+					</div>
+				</div>
+				<div class="column column-1"></div>
+				<div class="column column-2">
+					<div class="row row-6">
 						{{#session.stageState.teams.2.picked}}
 							<img class='portrait' src="{{ ~/charMap(.).url }}" />
 						{{/session.stageState.teams.2.picked}}
 					</div>
 					
-					<div class="column column-2">
-						<p>Team 2 Picked</p>
+					<div class="row">
+						{{#session.stageState.teams.2.banned}}
+							<img class='portrait' style="border-color: red;" src="{{ ~/charMap(.).url }}" />
+						{{/session.stageState.teams.2.banned}}
 					</div>
 				</div>
-				<div class="row row-2">
-					<div class="column column-2"></div>
-					<div class="column column-8">
-						{{#champs}}
-		    				<img class="portrait {{.available}}" src="{{.url}}" on-click='submitChar:{{.id}}'/>
-						{{/champs}}
-					</div>
-					<div class="column column-2"></div>
-				</div>
-			{{/partial}}
-			
-			{{#partial t2pick}}
-				{{>t1pick}}	
-			{{/partial}}
-			
-			{{#partial t1ban}}
-				{{>t1pick}}	
-			{{/partial}}
-			
-			{{#partial t2ban}}
-				{{>t1pick}}	
-			{{/partial}}
-			
-			{{#partial finish}}
-				{{>t1pick}}
-			{{/partial}}
-			
-			{{>session.stageTag}}
+			</div>
     	</script>
 		<script src="/assets/draft.js"></script>
 	</body>

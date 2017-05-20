@@ -29,8 +29,6 @@ var session = {},
 	  { id: 22, url: '/assets/heroes/Hero_Portrait_The_Fey.png.webp', available: true },
 	  { id: 23, url: '/assets/heroes/Hero_Portrait_TwinBlast.png.webp', available: true }
 	];
-
-//socket.emit('joinDraft', matchKey);
   	
 // wraps the socket.on bindings to avoid updating state for each thing
 // stateName - Name of the socket event
@@ -52,13 +50,8 @@ var onState = function(stateName, f) {
 
 
 var submitHandler = function(event, team) {
-	// only allow the this team to ready itself
-	console.log('submitReady');
 	if (team === teamNum) {
 		socket.emit('teamReady', team);	 
-	}	
-	else {
-		console.log('team: ' + team + ' teamNum: ' + teamNum);
 	}
 }
 
@@ -70,20 +63,16 @@ function isPick() {
 	return session.stageTag.indexOf('pick') !== -1;
 }
 
+function isObs() {
+	return teamId === 'obs'
+}
+
 function unavailableChars() {
 	var teams = session.stageState.teams;
 	var myTeam = teams[teamNum];
 	var theirTeam = teams[otherTeamNum()];
 	
 	var unavailable = myTeam.picked.concat(myTeam.banned).concat(theirTeam.picked).concat(theirTeam.banned);
-	
-	// if (isBan()) {
-	// 	unavailable = teams[otherTeamNum()].picked.concat(teams[otherTeamNum()].banned);
-	// }
-	// if (isPick()) {
-	// 	unavailable = teams[teamNum].picked.concat(teams[teamNum].banned);
-	// }
-	
 	return unavailable;
 }
 
@@ -103,7 +92,8 @@ var submitCharHandler = function(event, charId) {
 	}
 	
 	if (isBan()) {
-		socket.emit('banChar', charId, teamNum === 1 ? 2 : 1);
+		console.log(teamNum)
+		socket.emit('banChar', charId, teamNum);
 	}
 	if (isPick()) {
 		socket.emit('pickChar', charId, teamNum);
@@ -120,16 +110,15 @@ onState('pickCharStage', function(data) {
 });
 
 loaded = false;
+draftingLoaded = false
 var ractive;
 
 onState('getState', function() { 
 	console.log('getState');
-	
-	
-	
+	console.log(session)
 	if (!loaded && session !== undefined) {
 		loaded = true;
-		
+
 		if (teamId === session.team1Name) {
 			teamNum = 1;
 		}
@@ -137,49 +126,91 @@ onState('getState', function() {
 			teamNum = 2;
 		}
 		
-		ractive = new Ractive({ 
-			el: '#ractiveRoot',
-			template: '#draftTemplate',
-			data: {
-			  'session': session,
-			  'champs': champs,
-			  charMap: function(id) {
-			  	console.log(id);
-			  	return champs[id];
-			  }
-			}
-		});
-		
-		ractive.on('submitChar', submitCharHandler);
-		ractive.on('submitReady', submitHandler);
-		
-		setInterval( function () {
-  			ractive.set( 'session.stageState.timeLeft', session.stageState.timeLeft - 1);
-		}, 1000 );
+		if (session.stageTag === 'readyStage') { readyStage() }
 	}
 	
-	if (session.stageTag !== 'readyStage') {
-		var unavailable = unavailableChars();
-		for (i = 0; i < champs.length; i++) {
-			var champ = champs[i];
-			available = true;
-			
-			if (session.stageState.teamTurn !== teamNum) {
-				available = false;
-			}
-			else {
-				for (j = 0; j < unavailable.length; j++) {
-					if (champ.id === unavailable[j]) available = false;
-				}	
-			}
-			
-			var availableStr = available ? "available" : "unavailable";
-			
-			ractive.set('champs.' + i + '.available', availableStr);
-		}
+	if (!draftingLoaded && session !== undefined && session.stageTag !== 'readyStage') {
+		draftingStage()
 	}
 
 	return; 
 });
+
+function readyStage() {
+	console.log('readyStage')
+	ractive = new Ractive({ 
+		el: '#ractiveRoot',
+		template: '#readyTemplate',
+		data: {
+		  'session': session,
+		  getMyTeam: function() {
+		  	return teamId
+		  }
+		}
+	});
+	
+	ractive.on('submitReady', submitHandler);
+}
+
+function draftingStageLoad() {
+	draftingLoaded = true
+	console.log('drafting stage started')
+	ractive = new Ractive({ 
+		el: '#ractiveRoot',
+		template: '#draftTemplate',
+		data: {
+		  'session': session,
+		  'champs': champs,
+		  charMap: function(id) {
+		  	console.log(id);
+		  	return champs[id];
+		  },
+		  getMyTeam: function() {
+		  	return teamId
+		  },
+		  isAvailable: function(champ) {
+		  	console.log(champ)
+		  	console.log('isAvailable: ', this.get('champs.' + champ.id + '.available'))
+		  	return champ.available
+		  }
+		}
+	});
+	
+	ractive.on('submitChar', submitCharHandler);
+	
+	setInterval( function () {
+  		ractive.set( 'session.stageState.timeLeft', session.stageState.timeLeft - 1);
+  		if (session.stageState.timeLeft === 0) {
+			// pick random character
+  		}
+	}, 1000 );
+}
+function draftingStage() {	
+	if (!draftingLoaded) { draftingStageLoad() }
+	var unavailable = unavailableChars();
+
+	for (i = 0; i < champs.length; i++) {
+		var champ = champs[i];
+		available = true;
+		
+		if (session.stageState.teamTurn !== teamNum || session.stageTag === 'finish') {
+			available = false;
+		}
+		else {
+			for (j = 0; j < unavailable.length; j++) {
+				if (champ.id === unavailable[j]) available = false;
+			}	
+		}
+		
+		if (isObs()) { available = true }
+		
+		var availableStr = available ? "available" : "unavailable";
+		
+		ractive.set('champs.' + i + '.available', availableStr);
+		ractive.get('champs')
+		ractive.set('champs', champs)
+		ractive.updateModel()
+	}
+}
 
 socket.emit('getState');
